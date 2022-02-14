@@ -1,4 +1,7 @@
-use actix_web::{http, web, App, HttpRequest, HttpServer, Responder, Route};
+use actix_web::{
+    http::{self},
+    web, App, HttpRequest, HttpResponse, HttpServer, Responder, Route,
+};
 
 async fn carddav(_req: HttpRequest) -> impl Responder {
     let response = r##"
@@ -18,7 +21,7 @@ async fn carddav(_req: HttpRequest) -> impl Responder {
         </d:multistatus>
     "##;
 
-    response
+    HttpResponse::MultiStatus().body(response)
 }
 
 async fn principal(_req: HttpRequest) -> impl Responder {
@@ -38,8 +41,8 @@ async fn principal(_req: HttpRequest) -> impl Responder {
             </d:response>
         </d:multistatus>
     "##;
-    // format!("Hello {}!", response)
-    response
+
+    HttpResponse::MultiStatus().body(response)
 }
 
 async fn addressbooks(_req: HttpRequest) -> impl Responder {
@@ -80,7 +83,7 @@ async fn addressbooks(_req: HttpRequest) -> impl Responder {
     </d:multistatus>
     "##;
 
-    response
+    HttpResponse::MultiStatus().body(response)
 }
 
 fn propfind_route() -> Route {
