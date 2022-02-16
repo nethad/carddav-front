@@ -1,7 +1,9 @@
 use actix_web::{
-    http::{self},
+    http::{self, Method},
     web, App, HttpRequest, HttpResponse, HttpServer, Responder, Route,
 };
+
+const XML_CONTENT_TYPE: &str = "application/xml; charset=utf-8";
 
 async fn carddav(_req: HttpRequest) -> impl Responder {
     let response = r##"
@@ -21,7 +23,9 @@ async fn carddav(_req: HttpRequest) -> impl Responder {
         </d:multistatus>
     "##;
 
-    HttpResponse::MultiStatus().body(response)
+    HttpResponse::MultiStatus()
+        .content_type(XML_CONTENT_TYPE)
+        .body(response)
 }
 
 async fn principal(_req: HttpRequest) -> impl Responder {
@@ -42,7 +46,9 @@ async fn principal(_req: HttpRequest) -> impl Responder {
         </d:multistatus>
     "##;
 
-    HttpResponse::MultiStatus().body(response)
+    HttpResponse::MultiStatus()
+        .content_type(XML_CONTENT_TYPE)
+        .body(response)
 }
 
 async fn addressbooks(_req: HttpRequest) -> impl Responder {
@@ -83,29 +89,57 @@ async fn addressbooks(_req: HttpRequest) -> impl Responder {
     </d:multistatus>
     "##;
 
-    HttpResponse::MultiStatus().body(response)
+    HttpResponse::MultiStatus()
+        .content_type(XML_CONTENT_TYPE)
+        .body(response)
+}
+
+fn propfind_method() -> Method {
+    http::Method::from_bytes(b"PROPFIND").unwrap()
 }
 
 fn propfind_route() -> Route {
-    let propfind = http::Method::from_bytes(b"PROPFIND").unwrap();
-    web::method(propfind)
+    web::method(propfind_method())
+}
+
+fn routing_configuration(cfg: &mut web::ServiceConfig) {
+    cfg.route(
+        "/carddav/addressbooks/users/{user}/",
+        propfind_route().to(addressbooks),
+    )
+    .route(
+        "/carddav/principals/users/{user}/",
+        propfind_route().to(principal),
+    )
+    .route("/carddav", propfind_route().to(carddav));
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        App::new()
-            .route(
-                "/carddav/addressbooks/users/{user}/",
-                propfind_route().to(addressbooks),
-            )
-            .route(
-                "/carddav/principals/users/{user}/",
-                propfind_route().to(principal),
-            )
-            .route("/carddav", propfind_route().to(carddav))
-    })
-    .bind(("127.0.0.1", 8000))?
-    .run()
-    .await
+    HttpServer::new(|| App::new().configure(routing_configuration))
+        .bind(("127.0.0.1", 8000))?
+        .run()
+        .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::{test, App};
+
+    #[actix_rt::test]
+    async fn test_index_get() {
+        let mut app = test::init_service(App::new().configure(routing_configuration)).await;
+        let req = test::TestRequest::with_uri("/carddav")
+            .method(propfind_method())
+            .to_request();
+
+        let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_success());
+        assert_eq!(207, resp.status().as_u16());
+        assert_eq!(
+            "application/xml; charset=utf-8",
+            resp.headers().get("content-type").unwrap()
+        );
+    }
 }
