@@ -1,5 +1,5 @@
 [package]
-name = "carddav-front"
+name = "carddav_front"
 version = "0.1.0"
 edition = "2021"
 
