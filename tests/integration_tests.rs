@@ -1,3 +1,5 @@
+use std::fs;
+
 use actix_web::{test, App};
 use carddav_front::{
     routes::{propfind_method, routing_configuration},
@@ -23,4 +25,8 @@ async fn test_carddav() {
         "application/xml; charset=utf-8",
         resp.headers().get("content-type").unwrap()
     );
+
+    let expected_response = fs::read_to_string("tests/fixtures/carddav_response.xml").unwrap();
+    let body = test::read_body(resp).await;
+    assert_eq!(actix_web::web::Bytes::from(expected_response), body)
 }

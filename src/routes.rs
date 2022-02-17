@@ -3,7 +3,7 @@ use actix_web::{
     web::{self, ServiceConfig},
     HttpRequest, HttpResponse, Responder, Route,
 };
-use tera::Context;
+use tera::{Context, Tera};
 
 use crate::AppData;
 
@@ -17,37 +17,38 @@ fn propfind_route() -> Route {
     web::method(propfind_method())
 }
 
-async fn carddav(_req: HttpRequest, data: web::Data<AppData>) -> impl Responder {
-    let mut ctx = Context::new();
-    ctx.insert("user", "rendered@example.org");
-    let rendered = data.templates.render("root.xml.tera", &ctx).unwrap();
-
+fn build_response(rendered: String) -> HttpResponse {
     HttpResponse::MultiStatus()
         .content_type(XML_CONTENT_TYPE)
         .body(rendered)
+}
+
+fn render_template(tera: &Tera, ctx: &Context, file_name: &str) -> String {
+    tera.render(file_name, ctx).unwrap()
+}
+
+async fn carddav(_req: HttpRequest, data: web::Data<AppData>) -> impl Responder {
+    let mut ctx = Context::new();
+    ctx.insert("user", "rendered@example.org");
+    let rendered = render_template(&data.templates, &ctx, "root.xml.tera");
+
+    build_response(rendered)
 }
 
 async fn principal(_req: HttpRequest, data: web::Data<AppData>) -> impl Responder {
     let mut ctx = Context::new();
     ctx.insert("user", "rendered@example.org");
-    let rendered = data.templates.render("principal.xml.tera", &ctx).unwrap();
+    let rendered = render_template(&data.templates, &ctx, "principal.xml.tera");
 
-    HttpResponse::MultiStatus()
-        .content_type(XML_CONTENT_TYPE)
-        .body(rendered)
+    build_response(rendered)
 }
 
 async fn addressbooks(_req: HttpRequest, data: web::Data<AppData>) -> impl Responder {
     let mut ctx = Context::new();
     ctx.insert("user", "rendered@example.org");
-    let rendered = data
-        .templates
-        .render("addressbooks.xml.tera", &ctx)
-        .unwrap();
+    let rendered = render_template(&data.templates, &ctx, "addressbooks.xml.tera");
 
-    HttpResponse::MultiStatus()
-        .content_type(XML_CONTENT_TYPE)
-        .body(rendered)
+    build_response(rendered)
 }
 
 pub fn routing_configuration(cfg: &mut ServiceConfig) {
