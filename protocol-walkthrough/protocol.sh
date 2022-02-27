@@ -18,4 +18,8 @@ curl -X PROPFIND -H "Content-Type: application/xml; charset=utf-8" -H "Depth: 1"
 echo ""
 echo ""
 echo "---"
+echo "REPORT /carddav/addressbooks/.../contacts"
+echo ""
+curl -X REPORT -H "Content-Type: application/xml; charset=utf-8" -H "Depth: 1" -v -d@contacts-address-data.xml http://localhost:8000/carddav/addressbooks/users/user@example.org/contacts
+echo ""
 

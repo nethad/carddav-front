@@ -9,3 +9,7 @@ curl -X PROPFIND -H "Content-Type: application/xml; charset=utf-8" -H "Depth: 0"
 ```
 curl -X PROPFIND -H "Content-Type: application/xml; charset=utf-8" -H "Depth: 1" -v -d@addressbooks-props.xml http://localhost:8000/carddav/addressbooks/users/user@example.org/
 ```
+
+```
+curl -X REPORT -H "Content-Type: application/xml; charset=utf-8" -H "Depth: 1" -v -d@contacts-address-data.xml http://localhost:8000/carddav/addressbooks/users/user@example.org/contacts
+```

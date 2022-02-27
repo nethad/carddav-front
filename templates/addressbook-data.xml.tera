@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<d:multistatus xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
+  <d:response>
+    <d:href>/carddav/addressbooks/users/{{ user }}/contacts/{{ contact_id }}.vcf</d:href>
+    <d:propstat>
+      <d:prop>
+        <d:getetag>"12345678"</d:getetag>
+        <card:address-data>BEGIN:VCARD
+          VERSION:3.0
+          PRODID:-//Sabre//Sabre VObject 4.3.5//EN
+          UID:{{ contact_id }}
+          FN:Max Muster
+          N:Muster;Max;;;
+          ORG:Acme Corp.
+          TEL;TYPE=cell:+41781234567
+          EMAIL;TYPE=home:mail@example.org
+          URL;VALUE=URI:https://example.org
+          BDAY:19980114
+          GENDER:M
+          X-SOCIALPROFILE;TYPE=TWITTER:maxmuster
+          REV:20211001T063658Z
+          END:VCARD
+        </card:address-data>
+      </d:prop>
+      <d:status>HTTP/1.1 200 OK</d:status>
+    </d:propstat>
+  </d:response>
+</d:multistatus>
