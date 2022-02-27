@@ -12,6 +12,12 @@ curl -X PROPFIND -H "Content-Type: application/xml; charset=utf-8" -H "Depth: 0"
 echo ""
 echo ""
 echo "---"
+echo "PROPFIND /carddav/addressbooks/... (data support)"
+echo ""
+curl -X PROPFIND -H "Content-Type: application/xml; charset=utf-8" -H "Depth: 1" -d@addressbooks-data-support.xml http://localhost:8000/carddav/addressbooks/users/user@example.org/
+echo ""
+echo ""
+echo "---"
 echo "PROPFIND /carddav/addressbooks/..."
 echo ""
 curl -X PROPFIND -H "Content-Type: application/xml; charset=utf-8" -H "Depth: 1" -d@addressbooks-props.xml http://localhost:8000/carddav/addressbooks/users/user@example.org/

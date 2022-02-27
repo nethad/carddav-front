@@ -1,5 +1,6 @@
 use tera::Tera;
 
+pub mod formatting;
 pub mod routes;
 
 pub struct AppData {

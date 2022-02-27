@@ -5,7 +5,7 @@ use actix_web::{
 };
 use tera::{Context, Tera};
 
-use crate::AppData;
+use crate::{formatting::prettify_xml, AppData};
 
 const XML_CONTENT_TYPE: &str = "application/xml; charset=utf-8";
 
@@ -35,15 +35,21 @@ fn render_template(tera: &Tera, ctx: &Context, file_name: &str) -> String {
     tera.render(file_name, ctx).unwrap()
 }
 
-fn debug_body(context: &str, bytes: Bytes) {
+fn string_from_request_bytes(bytes: &Bytes) -> String {
+    String::from_utf8(bytes.to_vec()).unwrap()
+}
+
+fn debug_body(context: &str, bytes: &Bytes) {
+    let body_string = string_from_request_bytes(bytes);
+    let xml_body = prettify_xml(&body_string);
     println!("--> {}:", context);
     println!("---");
-    println!("{}", String::from_utf8(bytes.to_vec()).unwrap());
+    println!("{}", xml_body);
     println!("---");
 }
 
 async fn carddav(_req: HttpRequest, data: web::Data<AppData>, bytes: Bytes) -> impl Responder {
-    debug_body("carddav", bytes);
+    debug_body("carddav", &bytes);
     let mut ctx = Context::new();
     ctx.insert("user", "rendered@example.org");
     let rendered = render_template(&data.templates, &ctx, "root.xml.tera");
@@ -52,7 +58,7 @@ async fn carddav(_req: HttpRequest, data: web::Data<AppData>, bytes: Bytes) -> i
 }
 
 async fn principal(_req: HttpRequest, data: web::Data<AppData>, bytes: Bytes) -> impl Responder {
-    debug_body("principal", bytes);
+    debug_body("principal", &bytes);
 
     let mut ctx = Context::new();
     ctx.insert("user", "rendered@example.org");
@@ -62,26 +68,42 @@ async fn principal(_req: HttpRequest, data: web::Data<AppData>, bytes: Bytes) ->
 }
 
 async fn addressbooks(_req: HttpRequest, data: web::Data<AppData>, bytes: Bytes) -> impl Responder {
-    debug_body("addressbooks", bytes);
+    debug_body("addressbooks", &bytes);
+    let body = string_from_request_bytes(&bytes);
 
     let mut ctx = Context::new();
     ctx.insert("user", "rendered@example.org");
-    let rendered = render_template(&data.templates, &ctx, "addressbooks.xml.tera");
+
+    let template = if body.contains("supported") {
+        "addressbooks-data-support.xml.tera"
+    } else {
+        "addressbooks.xml.tera"
+    };
+
+    let rendered = render_template(&data.templates, &ctx, template);
 
     build_response(rendered)
 }
 
 async fn addressbook_data(
-    _req: HttpRequest,
+    req: HttpRequest,
     data: web::Data<AppData>,
     bytes: Bytes,
 ) -> impl Responder {
-    debug_body("addressbook-data", bytes);
+    debug_body("addressbook-data", &bytes);
 
     let mut ctx = Context::new();
     ctx.insert("user", "rendered@example.org");
     ctx.insert("contact_id", "d7684a02-795e-4a2e-b8ce-a805cf7c26ed");
-    let rendered = render_template(&data.templates, &ctx, "addressbook-data.xml.tera");
+
+    let template = if req.method().eq(&report_method()) {
+        "addressbook-data.xml.tera"
+    } else {
+        "addressbook-data-contenttype.xml.tera"
+    };
+
+    println!("addressbook_data, template --> {}", template);
+    let rendered = render_template(&data.templates, &ctx, template);
 
     build_response(rendered)
 }

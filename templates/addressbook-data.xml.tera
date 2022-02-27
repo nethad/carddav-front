@@ -4,7 +4,7 @@
     <d:href>/carddav/addressbooks/users/{{ user }}/contacts/{{ contact_id }}.vcf</d:href>
     <d:propstat>
       <d:prop>
-        <d:getetag>"12345678"</d:getetag>
+        <d:getetag>&quot;c4ccf4c4d4290286445529e294d942e7&quot;</d:getetag>
         <card:address-data>BEGIN:VCARD
           VERSION:3.0
           PRODID:-//Sabre//Sabre VObject 4.3.5//EN

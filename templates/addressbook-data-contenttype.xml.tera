@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<d:multistatus xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
+  <d:response>
+    <d:href>/carddav/addressbooks/users/{{ user }}/contacts/</d:href>
+    <d:propstat>
+      <d:prop>
+        <d:getcontenttype />
+        <d:getetag />
+      </d:prop>
+      <d:status>HTTP/1.1 404 Not Found</d:status>
+    </d:propstat>
+  </d:response>
+  <d:response>
+    <d:href>/carddav/addressbooks/users/{{ user }}/contacts/{{ contact_id }}.vcf</d:href>
+    <d:propstat>
+      <d:prop>
+        <d:getcontenttype>text/vcard; charset=utf-8</d:getcontenttype>
+        <d:getetag>&quot;c4ccf4c4d4290286445529e294d942e7&quot;</d:getetag>
+      </d:prop>
+      <d:status>HTTP/1.1 200 OK</d:status>
+    </d:propstat>
+  </d:response>
+</d:multistatus>
