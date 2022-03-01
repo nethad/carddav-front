@@ -26,6 +26,10 @@ fn dav_route(method: Method) -> Route {
 }
 
 fn build_response(rendered: String) -> HttpResponse {
+    println!("~~~~~~~~~~~~~~");
+    println!("response:");
+    println!("{}", rendered);
+    println!("~~~~~~~~~~~~~~");
     HttpResponse::MultiStatus()
         .content_type(XML_CONTENT_TYPE)
         .body(rendered)
@@ -80,6 +84,7 @@ async fn addressbooks(_req: HttpRequest, data: web::Data<AppData>, bytes: Bytes)
         "addressbooks.xml.tera"
     };
 
+    println!("addressbooks, template --> {}", template);
     let rendered = render_template(&data.templates, &ctx, template);
 
     build_response(rendered)
@@ -91,6 +96,7 @@ async fn addressbook_data(
     bytes: Bytes,
 ) -> impl Responder {
     debug_body("addressbook-data", &bytes);
+    let body = string_from_request_bytes(&bytes);
 
     let mut ctx = Context::new();
     ctx.insert("user", "rendered@example.org");
@@ -98,6 +104,8 @@ async fn addressbook_data(
 
     let template = if req.method().eq(&report_method()) {
         "addressbook-data.xml.tera"
+    } else if body.contains("supported") {
+        "addressbooks-data-support.xml.tera"
     } else {
         "addressbook-data-contenttype.xml.tera"
     };

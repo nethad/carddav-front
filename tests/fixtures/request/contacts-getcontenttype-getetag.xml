@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<d:propfind xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
+  <d:prop>
+    <d:getcontenttype />
+    <d:getetag />
+  </d:prop>
+</d:propfind>

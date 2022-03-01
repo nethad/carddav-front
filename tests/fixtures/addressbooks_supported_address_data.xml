@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<d:multistatus xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
+  <d:response>
+    <d:href>/carddav/addressbooks/users/rendered@example.org/</d:href>
+    <d:propstat>
+      <d:prop>
+        <card:supported-address-data />
+      </d:prop>
+      <d:status>HTTP/1.1 404 Not Found</d:status>
+    </d:propstat>
+  </d:response>
+  <d:response>
+    <d:href>/carddav/addressbooks/users/rendered@example.org/contacts/</d:href>
+    <d:propstat>
+      <d:prop>
+        <card:supported-address-data>
+          <card:address-data-type content-type="text/vcard" version="3.0" />
+          <card:address-data-type content-type="text/vcard" version="4.0" />
+        </card:supported-address-data>
+      </d:prop>
+      <d:status>HTTP/1.1 200 OK</d:status>
+    </d:propstat>
+  </d:response>
+</d:multistatus>

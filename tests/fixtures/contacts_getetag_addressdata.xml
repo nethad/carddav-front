@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <d:multistatus xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
   <d:response>
-    <d:href>/carddav/addressbooks/users/{{ user }}/contacts/</d:href>
+    <d:href>/carddav/addressbooks/users/rendered@example.org/contacts/</d:href>
     <d:propstat>
       <d:prop>
         <d:getetag />
@@ -11,14 +11,14 @@
     </d:propstat>
   </d:response>
   <d:response>
-    <d:href>/carddav/addressbooks/users/{{ user }}/contacts/{{ contact_id }}.vcf</d:href>
+    <d:href>/carddav/addressbooks/users/rendered@example.org/contacts/d7684a02-795e-4a2e-b8ce-a805cf7c26ed.vcf</d:href>
     <d:propstat>
       <d:prop>
         <d:getetag>c4ccf4c4d4290286445529e294d942e7</d:getetag>
         <card:address-data>BEGIN:VCARD&#13;
 VERSION:3.0&#13;
 PRODID:-//Sabre//Sabre VObject 4.3.5//EN&#13;
-UID:{{ contact_id }}&#13;
+UID:d7684a02-795e-4a2e-b8ce-a805cf7c26ed&#13;
 FN:Max Muster&#13;
 N:Muster;Max;;;&#13;
 ORG:Acme Corp.&#13;

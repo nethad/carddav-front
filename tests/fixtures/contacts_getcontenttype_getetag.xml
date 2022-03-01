@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <d:multistatus xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
   <d:response>
-    <d:href>/carddav/addressbooks/users/{{ user }}/contacts/</d:href>
+    <d:href>/carddav/addressbooks/users/rendered@example.org/contacts/</d:href>
     <d:propstat>
       <d:prop>
         <d:getcontenttype />
@@ -11,7 +11,7 @@
     </d:propstat>
   </d:response>
   <d:response>
-    <d:href>/carddav/addressbooks/users/{{ user }}/contacts/{{ contact_id }}.vcf</d:href>
+    <d:href>/carddav/addressbooks/users/rendered@example.org/contacts/d7684a02-795e-4a2e-b8ce-a805cf7c26ed.vcf</d:href>
     <d:propstat>
       <d:prop>
         <d:getcontenttype>text/vcard; charset=utf-8</d:getcontenttype>
