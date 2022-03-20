@@ -1,5 +1,6 @@
 use tera::Tera;
 
+pub mod carddav;
 pub mod formatting;
 pub mod routes;
 
