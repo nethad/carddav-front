@@ -1,13 +1,18 @@
 use simple_xml_builder::XMLElement;
 
 const STATUS_OK: &str = "HTTP/1.1 200 OK";
-// const STATUS_NOT_FOUND: &str = "HTTP/1.1 404 Not Found";
+const STATUS_NOT_FOUND: &str = "HTTP/1.1 404 Not Found";
 
 const XMLNS_D: (&str, &str) = ("xmlns:d", "DAV:");
 const XMLNS_CARD: (&str, &str) = ("xmlns:card", "urn:ietf:params:xml:ns:carddav");
 
 pub fn principal_path(identifier: &str) -> String {
     format!("/carddav/principals/users/{}/", identifier)
+}
+
+struct PropResponse {
+    found: bool,
+    content: XMLElement,
 }
 
 pub struct PropRequest {
@@ -35,36 +40,73 @@ pub fn parse_carddav_request(xml_content: &str) -> PropRequest {
     }
 }
 
-fn build_propstat_block(prop_request: PropRequest) -> XMLElement {
-    let prop_blocks = prop_request
+fn build_prop_responses(prop_request: PropRequest) -> Vec<PropResponse> {
+    prop_request
         .props
         .iter()
         .map(|prop| match prop.as_str() {
-            "current-user-principal" => Some(elem_with_children(
-                elem("d:current-user-principal"),
-                vec![text_node("d:href", &principal_path("test@example.org"))],
-            )),
-            _ => None,
+            "current-user-principal" => PropResponse {
+                found: true,
+                content: elem_with_children(
+                    elem("d:current-user-principal"),
+                    vec![text_node("d:href", &principal_path("test@example.org"))].into_iter(),
+                ),
+            },
+            _ => PropResponse {
+                found: false,
+                content: elem(prop),
+            },
         })
-        .filter_map(std::convert::identity)
-        .collect::<Vec<_>>();
+        .collect::<Vec<_>>()
+}
 
-    elem_with_children(
-        elem("d:propstat"),
-        vec![
-            elem_with_children(elem("d:prop"), prop_blocks),
-            text_node("d:status", STATUS_OK),
-        ],
-    )
+fn build_propstat_block(
+    prop_responses: impl Iterator<Item = XMLElement>,
+    found: bool,
+) -> Option<XMLElement> {
+    let elements = prop_responses.collect::<Vec<_>>();
+    if elements.is_empty() {
+        None
+    } else {
+        let status = if found { STATUS_OK } else { STATUS_NOT_FOUND };
+        Some(elem_with_children(
+            elem("d:propstat"),
+            vec![
+                elem_with_children(elem("d:prop"), elements.into_iter()),
+                text_node("d:status", status),
+            ]
+            .into_iter(),
+        ))
+    }
 }
 
 pub fn build_carddav_response(prop_request: PropRequest) -> String {
+    let prop_responses = build_prop_responses(prop_request);
+
+    let found_props = prop_responses
+        .iter()
+        .filter(|prop_block| prop_block.found)
+        .map(|prop_block| prop_block.content.clone());
+    let found_propstats = build_propstat_block(found_props, true);
+    let not_found_props = prop_responses
+        .iter()
+        .filter(|prop_block| !prop_block.found)
+        .map(|prop_block| prop_block.content.clone());
+    let not_found_propstats = build_propstat_block(not_found_props, false);
+
+    let response_elements = vec![
+        Some(text_node("d:href", "/")),
+        found_propstats,
+        not_found_propstats,
+    ];
+    let elements = response_elements
+        .into_iter()
+        .filter_map(|pb| pb)
+        .collect::<Vec<_>>();
+
     let root = elem_with_children(
         elem_with_attrs("d:multistatus", &[XMLNS_D, XMLNS_CARD]),
-        vec![elem_with_children(
-            elem("d:response"),
-            vec![text_node("d:href", "/"), build_propstat_block(prop_request)],
-        )],
+        vec![elem_with_children(elem("d:response"), elements.into_iter())].into_iter(),
     );
 
     root.to_string()
@@ -84,12 +126,25 @@ fn elem_with_attrs(tag: &str, attributes: &[(&str, &str)]) -> XMLElement {
     elem
 }
 
-fn elem_with_children(mut elem: XMLElement, children: Vec<XMLElement>) -> XMLElement {
+fn elem_with_children(
+    mut elem: XMLElement,
+    children: impl Iterator<Item = XMLElement>,
+) -> XMLElement {
     for child in children {
         elem.add_child(child);
     }
     elem
 }
+
+// fn elem_with_children2(
+//     mut elem: XMLElement,
+//     children: impl Iterator<Item = XMLElement>,
+// ) -> XMLElement {
+//     for child in children {
+//         elem.add_child(child);
+//     }
+//     elem
+// }
 
 fn elem(tag: &str) -> XMLElement {
     XMLElement::new(tag)
